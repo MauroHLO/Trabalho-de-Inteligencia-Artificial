@@ -163,3 +163,7 @@ def carregar_instancia(path: str):
             OBJ.append(pid)
 
     return INI, tuple(OBJ), acoes
+
+def carregar_strips(path):
+    INI, OBJ, ACOES = carregar_instancia(path)
+    return INI, OBJ, ACOES, None  # para manter 4 valores
