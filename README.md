@@ -1,5 +1,5 @@
 # Trabalho-de-Inteligencia-Artificial
-📦 Blocksworld STRIPS Planner
+📦 Mundo dos Blocos STRIPS Planner
 
 Este repositório contém um planejador STRIPS completo para o problema clássico Mundo dos Blocos, implementado como trabalho da disciplina de Inteligência Artificial.
 
