@@ -90,6 +90,9 @@ def verificaPreCondicao(acao:Acao, no:No):
         return False
 
 def imprimeArvore(no:No, numero = 0):
+    if no is None:
+        print('Sem solucao')
+        return None
     if no.pai != None:
         numero = imprimeArvore(no.pai)
         print(f"Acao realizada: {acoes[mapeamento[mapeamentoReverso[no.acao]]].acao}")
@@ -125,45 +128,45 @@ def buscaEmLargura(): # maior valor encondrado com 9 blocos
     return None
 
 
-def buscaEmProfundidadeLimitada(limite):
-    # Pilha normal
-    pilha = [noInicial]
+def buscaEmProfundidadeLimitada(noAtual: No, limite):
+    if verificarFinalizacao(noAtual.estado):
+        return noAtual
 
-    while pilha:
-        noAtual = pilha.pop()
+    if noAtual.profundidade >= limite:
+        return None
 
-        # Achou objetivo?
-        if verificarFinalizacao(noAtual.estado):
-            print("\n=== SOLUÇÃO ENCONTRADA ===")
-            imprimeArvore(noAtual)
-            return True
+    for _, acao in acoes.items():
+        if verificaPreCondicao(acao, noAtual):
+            novoNo = realizarAcao(acao, noAtual)
+            if not verificaAntepassados(novoNo, novoNo.estado):
 
-        # Verifica limite
-        if noAtual.profundidade >= limite:
-            continue
+                resultado = buscaEmProfundidadeLimitada(novoNo, limite)
+                if resultado is not None:
+                    return resultado
 
-        # Expande ações
-        for inteiro, acao in acoes.items():
-            if verificaPreCondicao(acao, noAtual):
-                novoNo = realizarAcao(acao, noAtual)
-                pilha.append(novoNo)
-
-    return False
+    return None
 
 
-def buscaEmProfundidadeIterativa():
+
+def iddfs(noInicial):
     limite = 1
-    resultado = buscaEmProfundidadeLimitada(limite)
-    while not resultado:
+    while True:
+        print(f"Testando com limite: {limite}")
+        resultado = buscaEmProfundidadeLimitada(noInicial, limite)
+        if resultado is not None:
+            return resultado
         limite += 1
-        resultado = buscaEmProfundidadeLimitada(limite)
 
 
 
+def verificaAntepassados(no: No, estadoAtual: Set[int]):
+    while no is not None:
+        if no.estado == estadoAtual:
+            return False
+        no = no.pai
+    return True
 
 
-
-
-lerArquivo("blocks-9-0.strips")
-buscaEmLargura()
+lerArquivo("blocks-7-0.strips")
+imprimeArvore(iddfs(noInicial))
 
