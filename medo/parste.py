@@ -12,44 +12,63 @@ class Parste:
         self.estadoFinal = set()
         self.noInicial = No(estado=set(), pai=None, acao=None, profundidade=0)
 
-    def get_pid(self, name):
-        if name not in self.mapeamento:
-            self.mapeamento[name] = self.contMap
-            self.mapeamentoReverso[self.contMap] = name
-            self.contMap += 1
-        return self.mapeamento[name]
+        # 🔥 Novo: conjuntos pré-computados para otimização da busca
+        self.predicados_relevantes = set()
 
-    def parse_token_list(self, line):
+    # ------------------------------------------------------
+    # Otimização 1: evitar chamada dupla a mapeamentos
+    # ------------------------------------------------------
+    def get_pid(self, name):
+        pid = self.mapeamento.get(name)
+        if pid is None:
+            pid = self.contMap
+            self.mapeamento[name] = pid
+            self.mapeamentoReverso[pid] = name
+            self.contMap += 1
+        return pid
+
+    # ------------------------------------------------------
+    # Otimização 2: split eficiente
+    # ------------------------------------------------------
+    @staticmethod
+    def parse_token_list(line):
         if not line:
             return []
-        return [t.strip() for t in line.split(";") if t.strip() != ""]
+        return [t for t in line.split(";") if t]
 
+    # ------------------------------------------------------
+    # LEITURA DO ARQUIVO STRIPS
+    # ------------------------------------------------------
     def lerArquivo(self, path: str):
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            raw_lines = [l.rstrip("\n").strip() for l in f.readlines()]
-
-        lines = [l for l in raw_lines if l != ""]
+            # 👇 Otimização: strip apenas 1x e ignorar vazios diretamente
+            lines = [l.strip() for l in f if l.strip()]
 
         if len(lines) < 3:
             raise ValueError("Arquivo STRIPS muito curto.")
 
-        estado_inicial_line = lines[-2]
-        objetivo_line = lines[-1]
+        # Últimas duas linhas sempre são EI e Objetivo
         action_lines = lines[:-2]
+        init_line = lines[-2]
+        goal_line = lines[-1]
 
+        # Ações sempre vêm em blocos de 3
         if len(action_lines) % 3 != 0:
             raise ValueError("Erro: ações devem vir em blocos de 3 linhas.")
 
+        # Limpar estruturas
         self.acoes.clear()
         self.estadoFinal.clear()
         self.noInicial.estado = set()
+        self.predicados_relevantes.clear()
 
-        i = 0
-        while i + 2 < len(action_lines):
+        # ------------------------------------------------------
+        # PARSE DAS AÇÕES
+        # ------------------------------------------------------
+        for i in range(0, len(action_lines), 3):
             nome = action_lines[i]
             preline = action_lines[i + 1]
             postline = action_lines[i + 2]
-            i += 3
 
             pre_toks = self.parse_token_list(preline)
             post_toks = self.parse_token_list(postline)
@@ -57,45 +76,57 @@ class Parste:
             pre = set()
             pos = set()
 
+            # 🔥 Otimização: repetir menos chamadas a string.startswith
             for tk in pre_toks:
-                if tk.startswith("~"):
+                if tk[0] == "~":
                     pid = self.get_pid(tk[1:])
                     pre.add(-pid)
+                    self.predicados_relevantes.add(pid)
                 else:
                     pid = self.get_pid(tk)
                     pre.add(pid)
+                    self.predicados_relevantes.add(pid)
 
             for tk in post_toks:
-                if tk.startswith("~"):
+                if tk[0] == "~":
                     pid = self.get_pid(tk[1:])
                     pos.add(-pid)
+                    self.predicados_relevantes.add(pid)
                 else:
                     pid = self.get_pid(tk)
                     pos.add(pid)
+                    self.predicados_relevantes.add(pid)
 
             oid = self.get_pid(nome)
             self.acoes[oid] = Acao(nome, pre, pos)
 
-        init_toks = self.parse_token_list(estado_inicial_line)
-
-        for tk in init_toks:
-            if tk.startswith("~"):
+        # ------------------------------------------------------
+        # PARSE ESTADO INICIAL
+        # ------------------------------------------------------
+        for tk in self.parse_token_list(init_line):
+            if tk[0] == "~":
                 pid = self.get_pid(tk[1:])
                 self.noInicial.estado.discard(pid)
             else:
                 pid = self.get_pid(tk)
                 self.noInicial.estado.add(pid)
-                
-        goal_toks = self.parse_token_list(objetivo_line)
 
-        for tk in goal_toks:
-            if tk.startswith("~"):
+        # ------------------------------------------------------
+        # PARSE OBJETIVO
+        # ------------------------------------------------------
+        for tk in self.parse_token_list(goal_line):
+            if tk[0] == "~":
                 pid = self.get_pid(tk[1:])
                 self.estadoFinal.add(-pid)
+                self.predicados_relevantes.add(pid)
             else:
                 pid = self.get_pid(tk)
                 self.estadoFinal.add(pid)
+                self.predicados_relevantes.add(pid)
 
+    # ------------------------------------------------------
+    # Funções utilitárias (inalteradas)
+    # ------------------------------------------------------
     def verificarFinalizacao(self, estado):
         return self.estadoFinal.issubset(estado)
 
@@ -113,40 +144,3 @@ class Parste:
             self.get_pid(acao.acao),
             no.profundidade + 1
         )
-
-    def verificaPreCondicao(self, acao: Acao, no: No):
-        return acao.precondicao.issubset(no.estado)
-
-    def imprimeEstado(self, no: No):
-        print(", ".join(self.mapeamentoReverso[i] for i in no.estado))
-
-    def imprimeArvore(self, no: No, n=0):
-        if no.pai:
-            n = self.imprimeArvore(no.pai)
-            print("Ação:", self.acoes[no.acao].acao)
-        print(f"Estado {n}: ", end="")
-        self.imprimeEstado(no)
-        return n + 1
-
-    def buscaEmLargura(self):
-        fila = deque([self.noInicial])
-        visitados = {frozenset(self.noInicial.estado)}
-
-        while fila:
-            noAtual = fila.popleft()
-
-            if self.verificarFinalizacao(noAtual.estado):
-                print("\n=== SOLUÇÃO ENCONTRADA ===")
-                self.imprimeArvore(noAtual)
-                return noAtual
-
-            for aid, acao in self.acoes.items():
-                if self.verificaPreCondicao(acao, noAtual):
-                    novo = self.realizarAcao(acao, noAtual)
-                    ef = frozenset(novo.estado)
-                    if ef not in visitados:
-                        visitados.add(ef)
-                        fila.append(novo)
-
-        print("Nenhuma solução encontrada.")
-        return None
