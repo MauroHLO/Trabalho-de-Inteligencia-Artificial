@@ -229,7 +229,8 @@ class Busca:
         elif tipo in ("DLS", "DFS LIMITADA"):
             if limite is None:
                 raise ValueError("Para DLS (Busca em Profundidade Limitada), informe um limite.")
-            resultado = self.buscaEmProfundidadeLimitada(self.parste.noInicial, limite)
+            resultado = self.buscaEmProfundidadeLimitada(self.parste.noInicial, limite, {})
+
         elif tipo in ("IDS", "IDDFS"):
             resultado = self.iddfs(self.parste.noInicial)
         elif tipo in ("A*", "A-STAR", "ASTAR"):
@@ -250,7 +251,15 @@ class Busca:
         return resultado
 
     # ---------- Mantive DLS/IDDFS (sem mudanças adicionais) ----------
-    def buscaEmProfundidadeLimitada(self, noAtual, limite):
+    def buscaEmProfundidadeLimitada(self, noAtual, limite, visitados):
+        estado_red = frozenset(noAtual.estado & self.relevantes)
+
+        # Se já visitado neste nível, não expandir
+        if estado_red in visitados and visitados[estado_red] <= noAtual.profundidade:
+            return None
+        visitados[estado_red] = noAtual.profundidade
+
+        # objetivo?
         if self.verificarFinalizacao(self.parste.estadoFinal, noAtual.estado):
             return noAtual
 
@@ -258,26 +267,26 @@ class Busca:
             return None
 
         for aid, acao in self.parste.acoes.items():
-            # filtra ações irrelevantes para reduzir branching
             if not self.acao_relevante(acao):
                 continue
+            if not self.verificaPreCondicao(acao, noAtual):
+                continue
 
-            if self.verificaPreCondicao(acao, noAtual):
-                novo = self.realizarAcao(acao, noAtual)
+            novo = self.realizarAcao(acao, noAtual)
 
-                if not self.verificaAntepassados(novo, novo.estado):
-                    continue
-
-                resultado = self.buscaEmProfundidadeLimitada(novo, limite)
-                if resultado is not None:
-                    return resultado
+            resultado = self.buscaEmProfundidadeLimitada(novo, limite, visitados)
+            if resultado is not None:
+                return resultado
 
         return None
 
+
     def iddfs(self, noInicial):
-        limite = 1
+        limite = 0
         while True:
-            resultado = self.buscaEmProfundidadeLimitada(noInicial, limite)
+            visitados = {}
+            resultado = self.buscaEmProfundidadeLimitada(noInicial, limite, visitados)
             if resultado is not None:
                 return resultado
             limite += 1
+
