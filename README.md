@@ -62,11 +62,8 @@ Trabalho IA/
       └── acoes.py         → definição das classes Acao e No
 
 ▶ Como executar
-
 No terminal, dentro da pasta Trabalho IA:
-
 python src/main.py
-
 
 O programa irá:
 
@@ -98,7 +95,6 @@ Penúltima linha: estado inicial
 Última linha: objetivo
 
 Exemplo simplificado:
-
 unstack_c_d
 clear_c;on_c_d
 clear_d;holding_c;~on_c_d
@@ -112,8 +108,6 @@ clear_a;on_b_a
 
 clear_c
 on_a_b
-
-
 Observação:
 ~predicado significa negação (efeito de remoção).
 
@@ -136,23 +130,14 @@ efeitos vão se acumulando até possibilitar alcançar todos os objetivos
 É leve o suficiente para instâncias pequenas e médias.
 
 👥 Equipe
-
-Implementação desenvolvida por um grupo de alunos da disciplina de IA, combinando:
-
-parsing manual otimizado
-
-representação por proposições inteiras
-
-estratégias tradicionais de busca
-
-melhorias sugeridas durante o processo
-
-O código foi retrabalhado para ficar claro, consistente e legível para qualquer membro da equipe ou avaliador.
+Membro 1: Bernardo Ferreira (553040)
+Membro 2: Elias Sousa Campos (554722)
+Membro 3: João Schontz (Matrícula)
+Membro 4: Mauro Henrique (554235)
 
 📌 Observação importante
 
 Pastas devem manter a seguinte estrutura para evitar erros de caminho:
-
 Trabalho IA/
     src/
         main.py
@@ -161,6 +146,4 @@ Trabalho IA/
         acoes.py
     instancias/
         *.strips
-
-
 A execução deve ser feita a partir da raiz do projeto.
