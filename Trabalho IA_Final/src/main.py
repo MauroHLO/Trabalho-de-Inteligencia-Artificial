@@ -3,7 +3,7 @@ import sys
 from codigo.parser import Parser
 from codigo.busca import Busca
 
-PASTA_INSTANCIAS = r"src\instancias"
+PASTA_INSTANCIAS = r"Trabalho IA_Final\src\instancias"
 
 
 def escolher_arquivo():
