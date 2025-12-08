@@ -1,48 +1,49 @@
 import os
 import sys
-from parser import Parser
+from parste import Parste     # seu ambiente STRIPS
 from busca import Busca
 
-PASTA_INSTANCIAS = r"Trabalho IA\src\instancias"
+PASTA = r"Trabalho IA\src\instancias"
 
 
 def escolher_arquivo():
     print("\nInstâncias disponíveis:\n")
 
-    if not os.path.isdir(PASTA_INSTANCIAS):
-        print(f"Erro: pasta '{PASTA_INSTANCIAS}' não encontrada.")
+    if not os.path.isdir(PASTA):
+        print(f"ERRO: pasta '{PASTA}' não encontrada.")
         sys.exit(1)
 
-    arquivos = [f for f in os.listdir(PASTA_INSTANCIAS) if f.endswith(".strips")]
+    arquivos = [f for f in os.listdir(PASTA) if f.endswith(".strips")]
 
     if not arquivos:
         print("Nenhum arquivo .strips encontrado.")
         sys.exit(1)
 
-    for i, nome in enumerate(arquivos, 1):
-        print(f"{i}. {nome}")
+    for i, arq in enumerate(arquivos, 1):
+        print(f"{i}. {arq}")
 
     print()
-    escolha = int(input("Escolha o número da instância: "))
+    op = int(input("Escolha o número da instância: "))
 
-    return os.path.join(PASTA_INSTANCIAS, arquivos[escolha - 1])
-
+    # devolve o caminho COMPLETO
+    return os.path.join(PASTA, arquivos[op - 1])
 
 def escolher_algoritmo():
-    print("\nAlgoritmos disponíveis:\n")
+    print("\nAlgoritmos Disponiveis:\n")
+    limite = None
+
     algoritmos = ["BFS", "DLS", "IDS", "A*", "Bidirecional"]
 
-    for i, nome in enumerate(algoritmos, 1):
-        print(f"{i}. {nome}")
-
+    for i, algoritmo in enumerate(algoritmos, 1):
+        print(f"{i}. {algoritmo}")
+    
     print()
-    escolha = int(input("Escolha um algoritmo: "))
 
-    limite = None
-    if escolha == 2:  # DLS
-        limite = int(input("Defina o limite para a busca: "))
+    op = int(input("Escolha um Algoritmo: "))
 
-    return algoritmos[escolha - 1], limite
+    if op == 2:
+        limite = int(input("Defnina um Limite para a Busca: "))
+    return algoritmos[op-1], limite
 
 
 def main():
@@ -55,13 +56,12 @@ def main():
         print(f"\nLendo instância: {caminho}")
         print("=" * 70)
 
-        ambiente = Parser()
-        ambiente.lerArquivo(caminho)
-
-        busca = Busca(ambiente)
-
-        alg, limite = escolher_algoritmo()
-        busca.executar_busca(alg, limite)
+        amb = Parste()      
+        busca = Busca(amb)
+        amb.lerArquivo(caminho)   
+        alg, lim = escolher_algoritmo()
+        
+        busca.executar_busca(alg, lim)
 
 
 if __name__ == "__main__":
