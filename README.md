@@ -1,105 +1,166 @@
-# Trabalho-de-Inteligencia-Artificial
-📦 Mundo dos Blocos STRIPS Planner
+🧠 Planejador STRIPS – Mundo dos Blocos
 
-Este repositório contém um planejador STRIPS completo para o problema clássico Mundo dos Blocos, implementado como trabalho da disciplina de Inteligência Artificial.
+Trabalho da disciplina de Inteligência Artificial
 
-O planejador suporta:
+Este repositório contém um planejador STRIPS funcional para o clássico Mundo dos Blocos, incluindo:
 
-✔ Interpretador de STRIPS
+interpretação completa de instâncias em formato .strips
 
-✔ Estados representados como proposições inteiras
+representação interna usando proposições inteiras
 
-✔ Todas as ações definidas via parsing
+pré-condições e efeitos de ações
 
-✔ Objetivos parciais
+estado inicial e objetivo lidos diretamente do arquivo
 
-✔ Várias técnicas de busca computacional:
+várias estratégias de busca
 
-BFS
+A implementação combina ideia estrutural original com otimizações e melhorias feitas ao longo do desenvolvimento da equipe.
 
-DFS limitada
+🚀 Funcionalidades principais
+✔ Leitura completa de arquivos STRIPS
 
-IDS
+O parser identifica automaticamente:
 
-A* (com heurística admissível)
+ações (nome, pré-condições e efeitos)
 
-Bidirecional avançada
+estado inicial
 
-✔ Execução via CLI
+estado objetivo
 
-📁 Estrutura do projeto
-src/
-  planner/
-    parser.py        → lê e interpreta arquivos .strips
-    mapeamento.py       → gerencia proposições e mapeamento string ↔ int
-    acoes.py       → classe Acao (pré-condições e efeitos)
-    heuristicas.py    → heurísticas admissíveis para A*
-    busca.py        → BFS, DFS, IDS, A*
-    bidirecional.py → busca bidirecional
-  main.py            → ponto de entrada do programa
+Tudo é convertido para IDs inteiros para facilitar a busca.
 
-instancias/
-  blocks-4-0.strips
-  blocks-4-1.strips
-  blocks-4-2.strips
-  ...
+✔ Suporte a várias técnicas de busca
+
+Implementamos:
+
+BFS (amplitude)
+
+DLS – Busca em profundidade limitada
+
+IDS – Iterative Deepening Search
+
+A* (com heurística H_ADD simplificada)
+
+Bidirecional (opção listada, mas não integrada na versão atual)
+
+✔ Caminho da solução mostrado passo a passo
+
+A saída imprime a sequência de ações realizadas e todos os estados intermediários.
+
+📁 Estrutura do Projeto
+Trabalho IA/
+│
+├── instancias/
+│     ├── blocks-4-0.strips
+│     ├── blocks-10-0.strips
+│     └── ...
+│
+└── src/
+      ├── main.py          → interface CLI e fluxo de execução
+      ├── parser.py        → leitura e interpretação dos arquivos .strips
+      ├── busca.py         → algoritmos de busca + heurística
+      └── acoes.py         → definição das classes Acao e No
 
 ▶ Como executar
 
-Na raiz do projeto:
+No terminal, dentro da pasta Trabalho IA:
 
-python src/main.py instancias/blocks-10-0.strips
+python src/main.py
 
-Saída típica:
 
-Lendo instância: blocks-10-0.strips
-Proposições: 120
-Ações: 650
-====================================================================
-BFS             | Custo:  14 | Nós:   87453 | Tempo:  531.22 ms
-DFS limitada    | Custo: None | Nós:  300000 | Tempo:  411.12 ms
-IDS             | Custo:  14 | Nós:  210434 | Tempo: 1212.88 ms
-A*              | Custo:  14 | Nós:   46291 | Tempo:  178.65 ms
-Bidirecional    | Custo:  14 | Nós:    8012 | Tempo:   55.22 ms
+O programa irá:
 
-📘 Formato das instâncias
+listar os arquivos .strips na pasta instancias/
 
-As instâncias seguem o padrão STRIPS:
+pedir para você escolher uma instância
 
-# Comentários
+pedir para escolher o algoritmo de busca
 
-Proposicoes:
-On(A,B)
-OnTable(A)
-Clear(A)
+executar e mostrar a solução (quando houver)
+
+Alternativamente, você pode passar o caminho direto:
+python src/main.py instancias/blocks-4-0.strips
+
+📝 Formato das instâncias STRIPS
+
+Cada arquivo .strips segue o padrão:
+
+Linha 1: nome da ação
+
+Linha 2: pré-condições (separadas por ;)
+
+Linha 3: efeitos (separados por ;)
+
+(repete para todas as ações)
+
+Penúltima linha: estado inicial
+
+Última linha: objetivo
+
+Exemplo simplificado:
+
+unstack_c_d
+clear_c;on_c_d
+clear_d;holding_c;~on_c_d
+
+putdown_c
+holding_c
+on_c_table;clear_c
+
+clear_a;on_b_a
 ...
 
-Inicio:
-On(C,A)
-Clear(C)
-...
-
-Objetivo:
-On(A,B)
-Clear(A)
-...
-
-Acoes:
-Action Move(A,Table,B)
-Pre: Clear(A) ^ On(A,Table) ^ Clear(B)
-Add: On(A,B) ^ Clear(Table)
-Del: On(A,Table) ^ Clear(B)
-
-...
-
-Tudo é processado automaticamente.
+clear_c
+on_a_b
 
 
-🧠 Heurísticas
+Observação:
+~predicado significa negação (efeito de remoção).
 
-Atualmente o sistema inclui:
+O parser converte tudo para inteiros, tratando:
 
-🟦 heurística básica (admissível)
+positivos → fatos verdadeiros
 
-Conta quantas metas ainda não foram satisfeitas.
+negativos → fatos removidos durante a aplicação da ação
 
+🔍 Heurística
+
+O algoritmo A* utiliza uma versão simplificada da H_ADD, baseada na soma dos custos para alcançar os literais do objetivo:
+
+custo do estado atual é 0
+
+aplicar ação tem custo 1
+
+efeitos vão se acumulando até possibilitar alcançar todos os objetivos
+
+É leve o suficiente para instâncias pequenas e médias.
+
+👥 Equipe
+
+Implementação desenvolvida por um grupo de alunos da disciplina de IA, combinando:
+
+parsing manual otimizado
+
+representação por proposições inteiras
+
+estratégias tradicionais de busca
+
+melhorias sugeridas durante o processo
+
+O código foi retrabalhado para ficar claro, consistente e legível para qualquer membro da equipe ou avaliador.
+
+📌 Observação importante
+
+Pastas devem manter a seguinte estrutura para evitar erros de caminho:
+
+Trabalho IA/
+    src/
+        main.py
+        parser.py
+        busca.py
+        acoes.py
+    instancias/
+        *.strips
+
+
+A execução deve ser feita a partir da raiz do projeto.
