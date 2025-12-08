@@ -1,7 +1,7 @@
 import os
 import sys
-from parser import Parser
-from busca import Busca
+from codigo.parser import Parser
+from codigo.busca import Busca
 
 PASTA_INSTANCIAS = r"src\instancias"
 
@@ -66,3 +66,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
