@@ -146,9 +146,10 @@ class Busca:
                     novo_custo = 1 + sum(custo_pre) if custo_pre else 1
 
                     for efeito in acao.poscondicao:
-                        if efeito not in custos or novo_custo < custos[efeito]:
-                            custos[efeito] = novo_custo
-                            mudou = True
+                        if efeito > 0:
+                            if efeito not in custos or novo_custo < custos[efeito]:
+                                custos[efeito] = novo_custo
+                                mudou = True
 
                     usadas.add(aid)
 
@@ -310,3 +311,4 @@ class Busca:
             if resultado is not None:
                 return resultado
             limite += 1
+
