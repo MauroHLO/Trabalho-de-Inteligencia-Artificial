@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+.env/
+
+# Editor configs
+.vscode/
+.idea/
+
+# Outputs from search (if you later save logs)
+*.log
+*.out
